@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parent Safety Dashboard</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f6f9; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        button { padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-right: 5px; }
+        .btn-start { background: #28a745; color: white; }
+        .btn-stop { background: #dc3545; color: white; }
+        #cameraView { width: 100%; max-width: 400px; height: 250px; background: #000; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Beti Safety Dashboard</h2>
+        <p>Status: <span id="status">Connecting...</span></p>
+    </div>
+
+    <div class="card">
+        <h3>Live Camera</h3>
+        <button class="btn-start" onclick="startCam()">Start Camera</button>
+        <button class="btn-stop" onclick="stopCam()">Stop Camera</button>
+        <br><br>
+        <img id="cameraView" />
+    </div>
+
+    <div class="card">
+        <h3>Live Audio & Location</h3>
+        <button class="btn-start" onclick="startAudio()">Start Audio</button>
+        <button class="btn-stop" onclick="stopAudio()">Stop Audio</button>
+        <p>Lat: <span id="lat">-</span> | Lng: <span id="lng">-</span></p>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3000');
+        socket.on('connect', () => {
+            document.getElementById('status').innerText = 'Connected';
+            socket.emit('register', { role: 'parent' });
+        });
+        function startCam() { socket.emit('parent_command', { command: 'START_CAMERA_STREAM' }); }
+        function stopCam() { socket.emit('parent_command', { command: 'STOP_CAMERA_STREAM' }); }
+        function startAudio() { socket.emit('parent_command', { command: 'START_AUDIO_LISTEN' }); }
+        function stopAudio() { socket.emit('parent_command', { command: 'STOP_AUDIO_LISTEN' }); }
+        socket.on('parent_receive_camera_frame', (d) => { document.getElementById('cameraView').src = "data:image/jpeg;base64," + d.frame; });
+        socket.on('parent_receive_location', (d) => { document.getElementById('lat').innerText = d.latitude; document.getElementById('lng').innerText = d.longitude; });
+    </script>
+</body>
+</html>
