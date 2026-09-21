@@ -18,15 +18,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Create App Structure & Properties
+      - name: Create App Code and Properties
         run: |
           mkdir -p app/src/main/java/com/safety/childapp
           mkdir -p app/src/main/res/values
 
-          # Android SDK location
           echo "sdk.dir=$ANDROID_HOME" > local.properties
 
           cat << 'EOF' > settings.gradle
@@ -49,21 +48,17 @@ jobs:
           EOF
 
           cat << 'EOF' > build.gradle
-          buildscript {
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-              dependencies {
-                  classpath 'com.android.tools.build:gradle:8.1.1'
-                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
-              }
+          plugins {
+              id 'com.android.application' version '8.1.1' apply false
+              id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
           }
           EOF
 
           cat << 'EOF' > app/build.gradle
-          apply plugin: 'com.android.application'
-          apply plugin: 'kotlin-android'
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
+          }
 
           android {
               namespace 'com.safety.childapp'
@@ -182,11 +177,8 @@ jobs:
           }
           EOF
 
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.2
-
       - name: Build APK
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
