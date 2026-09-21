@@ -20,13 +20,13 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
 
-      - name: Create App Code and Properties
+      - name: Create App Code
         run: |
           mkdir -p app/src/main/java/com/safety/childapp
           mkdir -p app/src/main/res/values
-
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
 
           cat << 'EOF' > settings.gradle
           pluginManagement {
@@ -180,7 +180,7 @@ jobs:
       - name: Build APK
         run: gradle assembleDebug
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ChildSafetyApp-APK
